@@ -1,0 +1,5 @@
+development:
+  dialect: postgres
+  datasource: dbname=devdb user=devuser password=devpassword host=localhost sslmode=disable
+  dir: migrations
+  table: migrations

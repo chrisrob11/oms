@@ -1,0 +1,53 @@
+linters-settings:
+  govet:
+    check-shadowing: true
+  gofmt:
+    simplify: true
+  gocyclo:
+    min-complexity: 10
+  revive:
+    ignore-generated-header: false
+    severity: warning
+    confidence: 0.8
+
+linters:
+  enable:
+    - bodyclose
+    - contextcheck
+    - decorder
+    - errcheck
+    - errname
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - godox
+    - goerr113
+    - gofmt
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nestif
+    - prealloc
+    - revive
+    - staticcheck
+    - stylecheck
+    - testpackage
+    - unconvert
+    - unparam
+    - unused
+    - wsl
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    # Add exclude rules here
+    - path: _test\.go$
+      linters: 
+        - gocyclo
+        - errcheck
+        - unused
+        - goerr113

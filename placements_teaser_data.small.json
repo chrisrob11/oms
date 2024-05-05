@@ -1,0 +1,263 @@
+[
+  {
+    "id": 1,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Awesome Plastic Car - 6475",
+    "booked_amount": 430706.6871532752,
+    "actual_amount": 401966.50504006835,
+    "adjustments": 1311.0731142230268
+  },
+  {
+    "id": 2,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Fantastic Plastic Shirt - 278c",
+    "booked_amount": 242951.09516407287,
+    "actual_amount": 244249.26860341238,
+    "adjustments": -2550.0901180359815
+  },
+  {
+    "id": 3,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Small Steel Gloves - 711b",
+    "booked_amount": 167541.33794846805,
+    "actual_amount": 163576.8124862435,
+    "adjustments": 2278.0670838042115
+  },
+  {
+    "id": 4,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Ergonomic Rubber Computer - 2ea5",
+    "booked_amount": 368649.0272179125,
+    "actual_amount": 403259.0235555895,
+    "adjustments": 0.0
+  },
+  {
+    "id": 5,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Sleek Rubber Gloves - bafc",
+    "booked_amount": 760578.3260056116,
+    "actual_amount": 837364.9545711188,
+    "adjustments": 0.0
+  },
+  {
+    "id": 6,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Practical Plastic Hat - 17fd",
+    "booked_amount": 595375.1485823743,
+    "actual_amount": 641996.2003868966,
+    "adjustments": 0.0
+  },
+  {
+    "id": 7,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Rustic Wooden Shoes - a365",
+    "booked_amount": 704137.1452722424,
+    "actual_amount": 698863.8288846993,
+    "adjustments": -34361.26357435764
+  },
+  {
+    "id": 8,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Rustic Cotton Car - c7e4",
+    "booked_amount": 479225.1719527728,
+    "actual_amount": 500751.8220778274,
+    "adjustments": -10174.425131297243
+  },
+  {
+    "id": 9,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Fantastic Steel Pants - b17a",
+    "booked_amount": 117549.66171982384,
+    "actual_amount": 111713.06793451903,
+    "adjustments": -1159.0752874795955
+  },
+  {
+    "id": 10,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Small Rubber Shirt - 03ee",
+    "booked_amount": 645269.6058038301,
+    "actual_amount": 570009.8649704285,
+    "adjustments": 13871.68621317412
+  },
+  {
+    "id": 11,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Intelligent Cotton Pants - 5038",
+    "booked_amount": 75462.08721676095,
+    "actual_amount": 67863.19602111439,
+    "adjustments": -1477.5139081336238
+  },
+  {
+    "id": 12,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Gorgeous Rubber Pants - 4617",
+    "booked_amount": 345204.6177664357,
+    "actual_amount": 360687.00628580764,
+    "adjustments": 0.0
+  },
+  {
+    "id": 13,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Gorgeous Steel Computer - 0445",
+    "booked_amount": 698634.6720406126,
+    "actual_amount": 681763.2820301985,
+    "adjustments": 32373.29511535905
+  },
+  {
+    "id": 14,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Awesome Concrete Car - 13fa",
+    "booked_amount": 145997.6540145481,
+    "actual_amount": 142309.37889988488,
+    "adjustments": 6184.763926400789
+  },
+  {
+    "id": 15,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Awesome Granite Table - a580",
+    "booked_amount": 356973.979758046,
+    "actual_amount": 314433.9832577668,
+    "adjustments": 16933.421720968614
+  },
+  {
+    "id": 16,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Intelligent Concrete Gloves - 2a3a",
+    "booked_amount": 642509.6100708398,
+    "actual_amount": 566640.1167288311,
+    "adjustments": 15142.123318225098
+  },
+  {
+    "id": 17,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Intelligent Wooden Hat - ded4",
+    "booked_amount": 241638.8811304927,
+    "actual_amount": 227905.27114232452,
+    "adjustments": 0.0
+  },
+  {
+    "id": 18,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Incredible Concrete Chair - 480f",
+    "booked_amount": 183569.08447063103,
+    "actual_amount": 201399.1382276513,
+    "adjustments": 0.0
+  },
+  {
+    "id": 19,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Practical Plastic Shirt - 24a4",
+    "booked_amount": 551638.0819151852,
+    "actual_amount": 581728.1820662585,
+    "adjustments": 0.0
+  },
+  {
+    "id": 20,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Small Concrete Car - 2f6a",
+    "booked_amount": 497334.75265548675,
+    "actual_amount": 469804.6042743097,
+    "adjustments": 0.0
+  },
+  {
+    "id": 21,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Gorgeous Cotton Gloves - af47",
+    "booked_amount": 213071.72309743127,
+    "actual_amount": 223590.11610111129,
+    "adjustments": 0.0
+  },
+  {
+    "id": 22,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Fantastic Wooden Pants - f445",
+    "booked_amount": 429078.3991230032,
+    "actual_amount": 0.0,
+    "adjustments": -1099.0475257780665
+  },
+  {
+    "id": 23,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Gorgeous Plastic Shirt - fe12",
+    "booked_amount": 394225.0681140225,
+    "actual_amount": 350912.61892440444,
+    "adjustments": 11490.422815273512
+  },
+  {
+    "id": 24,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Small Granite Shoes - ef8c",
+    "booked_amount": 77005.2500764048,
+    "actual_amount": 73845.9370263574,
+    "adjustments": 4456.9876310290165
+  },
+  {
+    "id": 25,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Practical Rubber Table - e065",
+    "booked_amount": 728838.5541692758,
+    "actual_amount": 657491.2624931175,
+    "adjustments": 38292.740128746664
+  },
+  {
+    "id": 26,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Awesome Rubber Shoes - d533",
+    "booked_amount": 489777.13035574846,
+    "actual_amount": 529546.6500539848,
+    "adjustments": 0.0
+  },
+  {
+    "id": 27,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Intelligent Rubber Hat - c5a3",
+    "booked_amount": 126923.74183147737,
+    "actual_amount": 133194.6422709781,
+    "adjustments": 1681.666847455133
+  },
+  {
+    "id": 28,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Ergonomic Granite Computer - 7047",
+    "booked_amount": 301144.97080435377,
+    "actual_amount": 276845.53536872414,
+    "adjustments": 20269.540414948817
+  },
+  {
+    "id": 29,
+    "campaign_id": 1,
+    "campaign_name": "Satterfield-Turcotte : Multi-channelled next generation analyzer - e550",
+    "line_item_name": "Awesome Concrete Chair - 72d7",
+    "booked_amount": 536235.3019094203,
+    "actual_amount": 541656.9621915575,
+    "adjustments": 17676.476053619637
+  }
+]
