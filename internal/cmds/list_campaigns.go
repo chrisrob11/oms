@@ -33,6 +33,10 @@ var ListCampaign = &cli.Command{
 		&cli.StringFlag{
 			Name: "token",
 		},
+		&cli.BoolFlag{
+			Name:    "followNextPage",
+			Aliases: []string{"fnp"},
+		},
 	},
 }
 
@@ -49,6 +53,7 @@ func (i *listCampaignCommand) Run(c *cli.Context) error {
 
 	limit := c.Int("limit")
 	token := c.String("token")
+	pageThrough := c.Bool("followNextPage")
 	req := &client.ListCampaignRequest{
 		Size: limit,
 	}
@@ -73,7 +78,34 @@ func (i *listCampaignCommand) Run(c *cli.Context) error {
 		fmt.Fprintf(w, "%d\t%s\t%s\n", c.ID, c.Name, strconv.FormatBool(c.Archiving))
 	}
 
-	return w.Flush()
+	err = w.Flush()
+	if err != nil {
+		return errors.Wrap(err, "unexpected flush error")
+	}
+
+	if pageThrough {
+		for resp.NextPageToken != "" {
+			pagingReq := &client.ListCampaignRequest{
+				Token: &resp.NextPageToken,
+			}
+
+			resp, err = omsClient.ListCampaigns(pagingReq)
+			if err != nil {
+				return errors.Wrap(err, "Cannot create campaign line item")
+			}
+
+			for _, c := range resp.Items {
+				fmt.Fprintf(w, "%d\t%s\t%s\n", c.ID, c.Name, strconv.FormatBool(c.Archiving))
+			}
+
+			flushErr := w.Flush()
+			if flushErr != nil {
+				return errors.Wrapf(err, "unable to flush data")
+			}
+		}
+	}
+
+	return nil
 }
 
 func toCompactTime(t *time.Time) string {

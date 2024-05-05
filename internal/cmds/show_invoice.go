@@ -52,6 +52,7 @@ func (i *showInvoiceCommand) Run(c *cli.Context) error {
 
 	fmt.Printf("Invoice\n")
 	fmt.Printf("ID:\t\t\t%d\n", resp.ID)
+	fmt.Printf("IssuedAt:\t\t%s\n", toCompactTime(&resp.IssuedAt))
 	fmt.Printf("CreatedAt:\t\t%s\n", toCompactTime(&resp.CreatedAt))
 	fmt.Printf("EndedAt:\t\t%s\n", toCompactTime(resp.EndedAt))
 	fmt.Printf("StartedAt:\t\t%s\n", toCompactTime(resp.StartedAt))
