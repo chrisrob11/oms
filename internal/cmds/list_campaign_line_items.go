@@ -6,7 +6,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/chrisrob11/oms/internal/client"
-	"github.com/chrisrob11/oms/internal/oms"
+	"github.com/chrisrob11/oms/internal/oms/models"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -53,6 +53,27 @@ func (i *listCampaignItemLineCommand) Run(c *cli.Context) error {
 	limit := c.Int("limit")
 	token := c.String("token")
 	pageThrough := c.Bool("followNextPage")
+
+	req := buildListCampaignLineItemRequest(limit, token)
+
+	resp, err := omsClient.ListCampaignLineItems(req)
+	if err != nil {
+		return errors.Wrap(err, "failed to list campaign line items")
+	}
+
+	printCampaignLineItems(resp.Items, true)
+
+	if pageThrough {
+		err = paginateCampaignLineItems(omsClient, resp.NextPageToken)
+		if err != nil {
+			return errors.Wrap(err, "failed to paginate campaign line items")
+		}
+	}
+
+	return nil
+}
+
+func buildListCampaignLineItemRequest(limit int, token string) *client.ListCampaignLineItemRequest {
 	req := &client.ListCampaignLineItemRequest{
 		Size: limit,
 	}
@@ -61,55 +82,36 @@ func (i *listCampaignItemLineCommand) Run(c *cli.Context) error {
 		req.Token = &token
 	}
 
-	resp, err := omsClient.ListCampaignLineItems(req)
-	if err != nil {
-		return errors.Wrap(err, "Cannot create campaign line item")
+	return req
+}
+
+func printCampaignLineItems(lineItems []*models.CampaignLineItem, writeHeader bool) {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	defer func() {
+		err := w.Flush()
+		if err != nil {
+			fmt.Printf("Unexpected flush error: %v", err)
+		}
+	}()
+
+	if writeHeader {
+		fmt.Fprintf(w, "ID\tCampaignID\tName\n")
 	}
 
-	// Create a new tabwriter
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-
-	// Print header row
-	fmt.Fprintf(w, "ID\tCampaignID\tName\n")
-
-	// Print data rows
-	for _, c := range resp.Items {
+	for _, c := range lineItems {
 		fmt.Fprintf(w, "%d\t%d\t%s\n", c.ID, c.CampaignID, c.Name)
 	}
+}
 
-	flushErr := w.Flush()
-	if flushErr != nil {
-		fmt.Printf("Error flushing to stdout: %v", flushErr)
-	}
-
-	if resp.NextPageToken != "" {
-		decodedToken, decodeErr := oms.DecodeToken(resp.NextPageToken)
-		if decodeErr == nil {
-			fmt.Printf("PagingToken: Token: %s, Size: %d, StartID: %d\n",
-				resp.NextPageToken, decodedToken.Size, decodedToken.StartID)
+func paginateCampaignLineItems(omsClient *client.Client, nextPageToken string) error {
+	for nextPageToken != "" {
+		resp, err := omsClient.ListCampaignLineItems(&client.ListCampaignLineItemRequest{Token: &nextPageToken})
+		if err != nil {
+			return err
 		}
-	}
 
-	if pageThrough {
-		for resp.NextPageToken != "" {
-			pagingReq := &client.ListCampaignLineItemRequest{
-				Token: &resp.NextPageToken,
-			}
-
-			resp, err = omsClient.ListCampaignLineItems(pagingReq)
-			if err != nil {
-				return errors.Wrap(err, "Cannot create campaign line item")
-			}
-
-			for _, c := range resp.Items {
-				fmt.Fprintf(w, "%d\t%d\t%s\n", c.ID, c.CampaignID, c.Name)
-			}
-
-			flushErr := w.Flush()
-			if flushErr != nil {
-				fmt.Printf("Error flushing to stdout: %v", flushErr)
-			}
-		}
+		printCampaignLineItems(resp.Items, false)
+		nextPageToken = resp.NextPageToken
 	}
 
 	return nil

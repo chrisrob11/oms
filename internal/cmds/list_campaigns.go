@@ -3,11 +3,11 @@ package cmds
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"text/tabwriter"
 	"time"
 
 	"github.com/chrisrob11/oms/internal/client"
+	"github.com/chrisrob11/oms/internal/oms/models"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -54,6 +54,27 @@ func (i *listCampaignCommand) Run(c *cli.Context) error {
 	limit := c.Int("limit")
 	token := c.String("token")
 	pageThrough := c.Bool("followNextPage")
+
+	req := buildListCampaignRequest(limit, token)
+	resp, err := omsClient.ListCampaigns(req)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to list campaigns")
+	}
+
+	printCampaigns(resp.Items, true)
+
+	if pageThrough {
+		err = paginateCampaigns(omsClient, resp.NextPageToken)
+		if err != nil {
+			return errors.Wrap(err, "failed to paginate campaigns")
+		}
+	}
+
+	return nil
+}
+
+func buildListCampaignRequest(limit int, token string) *client.ListCampaignRequest {
 	req := &client.ListCampaignRequest{
 		Size: limit,
 	}
@@ -62,47 +83,36 @@ func (i *listCampaignCommand) Run(c *cli.Context) error {
 		req.Token = &token
 	}
 
-	resp, err := omsClient.ListCampaigns(req)
-	if err != nil {
-		return errors.Wrap(err, "Cannot create campaign")
-	}
+	return req
+}
 
-	// Create a new tabwriter
+func printCampaigns(campaigns []*models.Campaign, writeHeader bool) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-
-	// Print header row
-	fmt.Fprintf(w, "ID\tName\tArchiving\n")
-
-	// Print data rows
-	for _, c := range resp.Items {
-		fmt.Fprintf(w, "%d\t%s\t%s\n", c.ID, c.Name, strconv.FormatBool(c.Archiving))
-	}
-
-	err = w.Flush()
-	if err != nil {
-		return errors.Wrap(err, "unexpected flush error")
-	}
-
-	if pageThrough {
-		for resp.NextPageToken != "" {
-			pagingReq := &client.ListCampaignRequest{
-				Token: &resp.NextPageToken,
-			}
-
-			resp, err = omsClient.ListCampaigns(pagingReq)
-			if err != nil {
-				return errors.Wrap(err, "Cannot create campaign line item")
-			}
-
-			for _, c := range resp.Items {
-				fmt.Fprintf(w, "%d\t%s\t%s\n", c.ID, c.Name, strconv.FormatBool(c.Archiving))
-			}
-
-			flushErr := w.Flush()
-			if flushErr != nil {
-				return errors.Wrapf(err, "unable to flush data")
-			}
+	defer func() {
+		err := w.Flush()
+		if err != nil {
+			fmt.Printf("Unexpected flush error: %v", err)
 		}
+	}()
+
+	if writeHeader {
+		fmt.Fprintf(w, "ID\tName\tArchiving\n")
+	}
+
+	for _, c := range campaigns {
+		fmt.Fprintf(w, "%d\t%s\t%t\n", c.ID, c.Name, c.Archiving)
+	}
+}
+
+func paginateCampaigns(omsClient *client.Client, nextPageToken string) error {
+	for nextPageToken != "" {
+		resp, err := omsClient.ListCampaigns(&client.ListCampaignRequest{Token: &nextPageToken})
+		if err != nil {
+			return err
+		}
+
+		printCampaigns(resp.Items, false)
+		nextPageToken = resp.NextPageToken
 	}
 
 	return nil
@@ -110,6 +120,10 @@ func (i *listCampaignCommand) Run(c *cli.Context) error {
 
 func toCompactTime(t *time.Time) string {
 	if t == nil {
+		return ""
+	}
+
+	if t.IsZero() {
 		return ""
 	}
 

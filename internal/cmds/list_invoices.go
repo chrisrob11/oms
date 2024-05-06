@@ -6,7 +6,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/chrisrob11/oms/internal/client"
-	"github.com/chrisrob11/oms/internal/oms"
+	"github.com/chrisrob11/oms/internal/oms/models"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -53,6 +53,27 @@ func (i *listInvoicesCommand) Run(c *cli.Context) error {
 	limit := c.Int("limit")
 	token := c.String("token")
 	pageThrough := c.Bool("followNextPage")
+
+	req := buildListInvoicesRequest(limit, token)
+
+	resp, err := omsClient.ListInvoices(req)
+	if err != nil {
+		return errors.Wrap(err, "failed to list invoices")
+	}
+
+	printInvoices(resp.Items, true)
+
+	if pageThrough {
+		err = paginateInvoices(omsClient, resp.NextPageToken)
+		if err != nil {
+			return errors.Wrap(err, "failed to paginate invoices")
+		}
+	}
+
+	return nil
+}
+
+func buildListInvoicesRequest(limit int, token string) *client.ListInvoicesRequest {
 	req := &client.ListInvoicesRequest{
 		Size: limit,
 	}
@@ -61,55 +82,36 @@ func (i *listInvoicesCommand) Run(c *cli.Context) error {
 		req.Token = &token
 	}
 
-	resp, err := omsClient.ListInvoices(req)
-	if err != nil {
-		return errors.Wrap(err, "Cannot create campaign line item")
-	}
+	return req
+}
 
-	// Create a new tabwriter
+func printInvoices(invoices []*models.Invoice, writeHeader bool) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-
-	// Print header row
-	fmt.Fprintf(w, "ID\tCampaignID\tTotalAdjustments\n")
-
-	// Print data rows
-	for _, c := range resp.Items {
-		fmt.Fprintf(w, "%d\t%d\t%f\n", c.ID, c.CampaignID, c.TotalAdjustments)
-	}
-
-	flushErr := w.Flush()
-	if flushErr != nil {
-		fmt.Printf("Error flushing to stdout: %v", flushErr)
-	}
-
-	if resp.NextPageToken != "" {
-		decodedToken, decodeErr := oms.DecodeToken(resp.NextPageToken)
-		if decodeErr == nil {
-			fmt.Printf("PagingToken: Token: %s, Size: %d, StartID: %d\n",
-				resp.NextPageToken, decodedToken.Size, decodedToken.StartID)
+	defer func() {
+		err := w.Flush()
+		if err != nil {
+			fmt.Printf("Unexpected flush error: %v", err)
 		}
+	}()
+
+	if writeHeader {
+		fmt.Fprintf(w, "ID\tCampaignID\tTotalAdjustments\n")
 	}
 
-	if pageThrough {
-		for resp.NextPageToken != "" {
-			pagingReq := &client.ListInvoicesRequest{
-				Token: &resp.NextPageToken,
-			}
+	for _, invoice := range invoices {
+		fmt.Fprintf(w, "%d\t%d\t%f\n", invoice.ID, invoice.CampaignID, invoice.TotalAdjustments)
+	}
+}
 
-			resp, err = omsClient.ListInvoices(pagingReq)
-			if err != nil {
-				return errors.Wrap(err, "Cannot create campaign line item")
-			}
-
-			for _, c := range resp.Items {
-				fmt.Fprintf(w, "%d\t%d\t%f\n", c.ID, c.CampaignID, c.TotalAdjustments)
-			}
-
-			flushErr := w.Flush()
-			if flushErr != nil {
-				fmt.Printf("Error flushing to stdout: %v", flushErr)
-			}
+func paginateInvoices(omsClient *client.Client, nextPageToken string) error {
+	for nextPageToken != "" {
+		resp, err := omsClient.ListInvoices(&client.ListInvoicesRequest{Token: &nextPageToken})
+		if err != nil {
+			return err
 		}
+
+		printInvoices(resp.Items, false)
+		nextPageToken = resp.NextPageToken
 	}
 
 	return nil
