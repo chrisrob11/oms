@@ -26,7 +26,7 @@ func NewServer() (*Server, error) {
 	r := gin.Default()
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 
-	db, err := db.NewDBContext()
+	db, err := db.NewDBContext(logger)
 	if err != nil {
 		return nil, err
 	}

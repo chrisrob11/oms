@@ -113,6 +113,39 @@ func (c *Client) executeAction(endpoint string, id int, action string, data inte
 	return nil
 }
 
+// update sends a POST request to do an action on a resource.
+func (c *Client) update(endpoint string, id int, in interface{}) error {
+	reqBody, err := json.Marshal(in)
+	if err != nil {
+		return fmt.Errorf("error encoding JSON: %w", err)
+	}
+
+	req, err := http.NewRequest("PUT", c.BaseURL+endpoint+"/"+strconv.Itoa(id), bytes.NewBuffer(reqBody))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("error making HTTP request: %w", err)
+	}
+
+	defer func() {
+		errClose := resp.Body.Close()
+		if errClose != nil {
+			c.logger.Warn("Error closing body")
+		}
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		return newErrUnexpectedStatusCode(resp)
+	}
+
+	return nil
+}
+
 // listResources sends a Get request to list resources.
 func (c *Client) listResources(endpoint string, token *string, limit *int, out interface{}) error {
 	queryValues := url.Values{}
@@ -353,4 +386,22 @@ func (c *Client) ListInvoices(req *ListInvoicesRequest) (*models.List[models.Inv
 	}
 
 	return items, nil
+}
+
+func (c *Client) UpdateCampaign(campaign models.Campaign) error {
+	err := c.update("/campaigns", campaign.ID, &campaign)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) UpdateCampaignLineItem(campaignLineItem models.CampaignLineItem) error {
+	err := c.update("/campaignLineItems", campaignLineItem.ID, &campaignLineItem)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

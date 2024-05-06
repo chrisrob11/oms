@@ -36,6 +36,9 @@ var ListInvoices = &cli.Command{
 			Name:    "followNextPage",
 			Aliases: []string{"fnp"},
 		},
+		&cli.BoolFlag{
+			Name: "allFields",
+		},
 	},
 }
 
@@ -54,17 +57,19 @@ func (i *listInvoicesCommand) Run(c *cli.Context) error {
 	token := c.String("token")
 	pageThrough := c.Bool("followNextPage")
 
-	req := buildListInvoicesRequest(limit, token)
+	req := i.buildListInvoicesRequest(limit, token)
 
 	resp, err := omsClient.ListInvoices(req)
 	if err != nil {
 		return errors.Wrap(err, "failed to list invoices")
 	}
 
-	printInvoices(resp.Items, true)
+	allFields := c.Bool("allFields")
+
+	i.printInvoices(resp.Items, true, allFields)
 
 	if pageThrough {
-		err = paginateInvoices(omsClient, resp.NextPageToken)
+		err = i.paginateInvoices(omsClient, resp.NextPageToken, allFields)
 		if err != nil {
 			return errors.Wrap(err, "failed to paginate invoices")
 		}
@@ -73,7 +78,7 @@ func (i *listInvoicesCommand) Run(c *cli.Context) error {
 	return nil
 }
 
-func buildListInvoicesRequest(limit int, token string) *client.ListInvoicesRequest {
+func (i *listInvoicesCommand) buildListInvoicesRequest(limit int, token string) *client.ListInvoicesRequest {
 	req := &client.ListInvoicesRequest{
 		Size: limit,
 	}
@@ -85,7 +90,7 @@ func buildListInvoicesRequest(limit int, token string) *client.ListInvoicesReque
 	return req
 }
 
-func printInvoices(invoices []*models.Invoice, writeHeader bool) {
+func (i *listInvoicesCommand) printInvoices(invoices []*models.Invoice, writeHeader, allFields bool) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	defer func() {
 		err := w.Flush()
@@ -95,22 +100,34 @@ func printInvoices(invoices []*models.Invoice, writeHeader bool) {
 	}()
 
 	if writeHeader {
-		fmt.Fprintf(w, "ID\tCampaignID\tTotalAdjustments\n")
+		if allFields {
+			//nolint:lll //Why: this is the required headers
+			fmt.Fprintf(w, "ID\tCampaignID\tTotalActual\tTotalBooked\tTotalAdjustments\tIssuedAt\tCreatedAt\tUpdatedAt\tStartedAt\tEndedAt\n")
+		} else {
+			fmt.Fprintf(w, "ID\tCampaignID\tTotalAdjustments\n")
+		}
 	}
 
-	for _, invoice := range invoices {
-		fmt.Fprintf(w, "%d\t%d\t%f\n", invoice.ID, invoice.CampaignID, invoice.TotalAdjustments)
+	for _, inv := range invoices {
+		if allFields {
+			fmt.Fprintf(w, "%d\t%d\t%f\t%f\t%f\t%s\t%s\t%s\t%s\t%s\n", inv.ID, inv.CampaignID, inv.TotalActualAmount,
+				inv.TotalBookedAmount, inv.TotalActualAmount, toCompactTime(&inv.IssuedAt),
+				toCompactTime(&inv.CreatedAt), toCompactTime(&inv.UpdatedAt),
+				toCompactTime(inv.StartedAt), toCompactTime(inv.EndedAt))
+		} else {
+			fmt.Fprintf(w, "%d\t%d\t%f\n", inv.ID, inv.CampaignID, inv.TotalAdjustments)
+		}
 	}
 }
 
-func paginateInvoices(omsClient *client.Client, nextPageToken string) error {
+func (i *listInvoicesCommand) paginateInvoices(omsClient *client.Client, nextPageToken string, allFields bool) error {
 	for nextPageToken != "" {
 		resp, err := omsClient.ListInvoices(&client.ListInvoicesRequest{Token: &nextPageToken})
 		if err != nil {
 			return err
 		}
 
-		printInvoices(resp.Items, false)
+		i.printInvoices(resp.Items, false, allFields)
 		nextPageToken = resp.NextPageToken
 	}
 

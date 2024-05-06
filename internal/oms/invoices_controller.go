@@ -2,6 +2,7 @@ package oms
 
 import (
 	"database/sql"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -51,6 +52,11 @@ func (s *invoicesController) get(c *gin.Context) {
 	}
 
 	invoice, err := s.dbQueries.GetInvoice(c.Request.Context(), id)
+	if errors.Is(err, sql.ErrNoRows) {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

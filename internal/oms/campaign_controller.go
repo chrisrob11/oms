@@ -41,14 +41,25 @@ func (s *campaignsController) create(c *gin.Context) {
 	var campaign db.OmsCampaign
 
 	if req.ID > 0 {
+		s.logger.Info("Creating campaign with id")
+
 		params := req.ToCreateCampaignWithID()
+
 		campaign, err = s.dbQueries.CreateCampaignWithID(c.Request.Context(), *params)
+		if err == nil {
+			resetErr := s.dbQueries.ResetCampaignID(c.Request.Context())
+			if resetErr != nil {
+				s.logger.Error("Cannot reset the serial id after manual insert")
+			}
+		}
 	} else {
+		s.logger.Info("Creating campaign without id")
 		params := req.ToCreateCampaign()
 		campaign, err = s.dbQueries.CreateCampaign(c.Request.Context(), *params)
 	}
 
 	if err != nil {
+		s.logger.Error("Error creating campaign", slog.Attr{Key: "error", Value: slog.StringValue(err.Error())})
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 
 		return
@@ -64,14 +75,16 @@ func (s *campaignsController) get(c *gin.Context) {
 		return
 	}
 
+	campaign, err := s.dbQueries.GetCampaign(c.Request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
 
-	campaign, err := s.dbQueries.GetCampaign(c.Request.Context(), id)
 	if err != nil {
+		s.logger.Error("error occurred getting campaign", slog.Attr{Key: "error", Value: slog.StringValue(err.Error())})
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
 		return
 	}
 

@@ -1,0 +1,1 @@
+jsonnet -y ./deployments/kubernetes/app.jsonnet | yq eval -P - > ./deployments/kubernetes/app.yaml
