@@ -37,6 +37,8 @@ func main() {
 			cmds.ListInvoices,
 			cmds.ShowInvoice,
 			cmds.AdjustInvoice,
+			cmds.UpdateCampaign,
+			cmds.UpdateCampaignLineItem,
 		},
 	}
 

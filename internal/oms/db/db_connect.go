@@ -3,6 +3,7 @@ package db
 
 import (
 	"database/sql"
+	"log/slog"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -11,12 +12,11 @@ import (
 
 var (
 	errDatabaseURLEnvNotSet = errors.New("DATABASE_URL is not set")
-	errConnectingToDatabase = errors.New("error connecting to database")
 )
 
 // NewDBContext creates a new db context.
-func NewDBContext() (*Queries, error) {
-	dbValue, err := setupDatabase()
+func NewDBContext(logger *slog.Logger) (*Queries, error) {
+	dbValue, err := setupDatabase(logger)
 	if err != nil {
 		return nil, err
 	}
@@ -24,12 +24,14 @@ func NewDBContext() (*Queries, error) {
 	return New(dbValue), nil
 }
 
-func setupDatabase() (*sql.DB, error) {
+func setupDatabase(logger *slog.Logger) (*sql.DB, error) {
 	// Example DSN: "host=localhost user=devuser dbname=devdb password=devpassword sslmode=disable"
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		return nil, errDatabaseURLEnvNotSet
 	}
+
+	logger.Info("Database dsn", slog.Attr{Key: "dsn", Value: slog.StringValue(dsn)})
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -38,7 +40,7 @@ func setupDatabase() (*sql.DB, error) {
 
 	err = db.Ping()
 	if err != nil {
-		return nil, errConnectingToDatabase
+		return nil, errors.Wrap(err, "error connecting to database")
 	}
 
 	return db, nil

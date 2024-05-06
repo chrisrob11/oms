@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: oms
+  name: oms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oms
+  template:
+    metadata:
+      labels:
+        app: oms
+    spec:
+      containers:
+        - env:
+            - name: DATABASE_URL
+              value: host=postgres dbname=postgres user=$(username) password=$(password) sslmode=disable
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
+          image: chrisrob1111/oms:latest
+          name: oms
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oms
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: oms
+---
+apiVersion: v1
+data:
+  password: cGFzc3dvcmQ=
+  username: dXNlcg==
+kind: Secret
+metadata:
+  name: postgres-credentials
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: postgres-credentials
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: postgres-credentials
+          image: postgres:latest
+          name: postgres
+          ports:
+            - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+  type: ClusterIP

@@ -38,3 +38,19 @@ func (q *Queries) BuildCampaignInvoice(ctx context.Context,
 
 	return p, nil
 }
+
+// nolint:lll // Why this is a long sql statement that is ok to be long
+const resetCampaignSerialID = "SELECT setval(pg_get_serial_sequence('oms.campaigns', 'id'), (SELECT MAX(id) FROM oms.campaigns) + 1);"
+
+func (q *Queries) ResetCampaignID(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, resetCampaignSerialID)
+	return err
+}
+
+// nolint:lll // Why this is a long sql statement that is ok to be long
+const resetCampaignLineItemSerialID = "SELECT setval(pg_get_serial_sequence('oms.campaign_line_items', 'id'), (SELECT MAX(id) FROM oms.campaign_line_items) + 1);"
+
+func (q *Queries) ResetCampaignLineItemID(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, resetCampaignLineItemSerialID)
+	return err
+}

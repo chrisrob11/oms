@@ -3,7 +3,6 @@ package oms
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -43,11 +42,16 @@ func (s *campaignLineItemsController) create(c *gin.Context) {
 
 	if modelReq.ID > 0 {
 		req := modelReq.ToCreateCampaignLineItemWithID()
-		fmt.Printf("Creating Campaign line with id: %v\n", req)
+
 		campaignLineID, err = s.dbQueries.CreateCampaignLineWithID(c.Request.Context(), req)
+		if err == nil {
+			resetErr := s.dbQueries.ResetCampaignLineItemID(c.Request.Context())
+			if resetErr != nil {
+				s.logger.Error("resetting the serial id for campaign line item failed")
+			}
+		}
 	} else {
 		req := modelReq.ToCreateCampaignLineItem()
-		fmt.Printf("Creating Campaign line: %v\n", req)
 		campaignLineID, err = s.dbQueries.CreateCampaignLine(c.Request.Context(), req)
 	}
 
@@ -153,13 +157,6 @@ func (s *campaignLineItemsController) update(c *gin.Context) {
 	}
 
 	col := req.ToCreateCampaignLineItem()
-
-	// NOTE: have a problem with the current update, it will update all the data
-	// so if the request above comes in and only updates one part, this will
-	// update all parts not updated to empty. Need to fix, likely easist way will
-	// be just do a get and apply all values not specified from the get, so
-	// no changes. Better change would be to not use sqlc and build the updates
-	// dynamically.
 	update := db.UpdateCampaignLineParams{
 		ID:          id,
 		Name:        req.Name,
