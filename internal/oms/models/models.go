@@ -28,8 +28,8 @@ func NewCampaignFromDB(c *db.OmsCampaign) *Campaign {
 		StartedAt: toTime(c.StartedAt),
 		EndedAt:   toTime(c.EndedAt),
 		Archiving: c.Archiving.Bool,
-		CreatedAt: *toTime(c.CreatedAt),
-		UpdatedAt: *toTime(c.UpdatedAt),
+		CreatedAt: c.CreatedAt.Time,
+		UpdatedAt: c.UpdatedAt.Time,
 	}
 }
 
@@ -83,21 +83,10 @@ func NewCampaignLineItemFromDB(c *db.OmsCampaignLineItem) (*CampaignLineItem, er
 	var adjustments float64
 
 	if c.Adjustments.Valid {
-		actual, err = strconv.ParseFloat(c.Adjustments.String, 64)
+		adjustments, err = strconv.ParseFloat(c.Adjustments.String, 64)
 		if err != nil {
 			return nil, errors.Wrapf(err, "string adjustments not convertable to float: %s", c.Adjustments.String)
 		}
-	}
-
-	var createdAt time.Time
-	if c.CreatedAt.Valid {
-		createdAt = c.CreatedAt.Time
-	}
-
-	var updatedAt time.Time
-
-	if c.UpdatedAt.Valid {
-		createdAt = c.UpdatedAt.Time
 	}
 
 	return &CampaignLineItem{
@@ -109,8 +98,8 @@ func NewCampaignLineItemFromDB(c *db.OmsCampaignLineItem) (*CampaignLineItem, er
 		Adjustments: adjustments,
 		StartedAt:   toTime(c.StartedAt),
 		EndedAt:     toTime(c.EndedAt),
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
+		CreatedAt:   c.CreatedAt.Time,
+		UpdatedAt:   c.UpdatedAt.Time,
 	}, nil
 }
 
@@ -160,6 +149,7 @@ func (i *Invoice) ToCreateInvoiceParams() db.CreateInvoiceParams {
 		TotalAdjustments:  toSQLStringFromFloat64(i.TotalAdjustments),
 		StartedAt:         toSQLTime(i.StartedAt),
 		EndedAt:           toSQLTime(i.EndedAt),
+		IssuedAt:          toSQLTime(&i.IssuedAt),
 	}
 }
 
@@ -203,6 +193,7 @@ func NewInvoiceFromDB(i db.OmsInvoice) (*Invoice, error) {
 		EndedAt:           toTime(i.EndedAt),
 		CreatedAt:         i.CreatedAt.Time,
 		UpdatedAt:         i.EndedAt.Time,
+		IssuedAt:          i.IssuedAt.Time,
 	}, nil
 }
 

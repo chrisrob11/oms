@@ -71,18 +71,15 @@ func (i *importCommand) Run(c *cli.Context) error {
 	}()
 
 	campaignsCreatedIDMap := map[int]struct{}{}
-
+	campaignLineItemsCount := 0
 	omsClient := client.NewClient(i.serviceURL)
-
-	campaignsCreated := 0
-	campaignLineItemsCreated := 0
 
 	decoder, err := i.initializeJSONDecoder(file)
 	if err != nil {
 		return err
 	}
 
-	generateInvoices := c.Bool("generateInvoices")
+	genInvoices := c.Bool("generateInvoices")
 
 	for decoder.More() {
 		var item map[string]interface{}
@@ -90,43 +87,62 @@ func (i *importCommand) Run(c *cli.Context) error {
 			return errors.Wrap(err, "Cannot decode json")
 		}
 
-		campaign, campaignLineItem := processLine(item)
-		campaignID := campaign.ID
-
-		if _, exists := campaignsCreatedIDMap[campaign.ID]; !exists {
-			_, err = omsClient.CreateCampaign(campaign)
-			if err != nil {
-				return errors.Wrapf(err, "Cannot create a campaign")
-			}
-
-			campaignsCreatedIDMap[campaignID] = struct{}{}
-			campaignsCreated++
+		uploadErr := uploadData(omsClient, campaignsCreatedIDMap, item)
+		if uploadErr != nil {
+			return err
 		}
-
-		_, err = omsClient.CreateCampaignOrderLine(campaignLineItem)
-		if err != nil {
-			return errors.Wrapf(err, "Cannot create a campaign line item")
-		}
-		campaignLineItemsCreated++
+		campaignLineItemsCount++
 	}
 
 	createdInvoices := 0
 
-	if generateInvoices {
-		for campaignID, _ := range campaignsCreatedIDMap {
-			_, err := omsClient.GenerateInvoiceFromCampaign(&client.GenerateInvoiceFromCampaignRequest{ID: campaignID})
-			if err != nil {
-				return errors.Wrapf(err, "Cannot create a invoice for campaign line: %d", campaignID)
-			}
-			createdInvoices++
+	if genInvoices {
+		createdInvoices, err = generateInvoices(omsClient, campaignsCreatedIDMap)
+		if err != nil {
+			return err
 		}
 	}
 
-	fmt.Printf("Created %d campaigns\n", campaignsCreated)
-	fmt.Printf("Created %d campaign order lines\n", campaignLineItemsCreated)
+	fmt.Printf("Created %d campaigns\n", len(campaignsCreatedIDMap))
+	fmt.Printf("Created %d campaign order lines\n", campaignLineItemsCount)
 	fmt.Printf("Created %d invoices\n", createdInvoices)
 
 	return nil
+}
+
+func uploadData(omsClient *client.Client, campaignsCreatedIDMap map[int]struct{}, item map[string]interface{}) error {
+	campaign, campaignLineItem := processLine(item)
+	campaignID := campaign.ID
+
+	if _, exists := campaignsCreatedIDMap[campaign.ID]; !exists {
+		_, err := omsClient.CreateCampaign(campaign)
+		if err != nil {
+			return errors.Wrapf(err, "Cannot create a campaign")
+		}
+
+		campaignsCreatedIDMap[campaignID] = struct{}{}
+	}
+
+	_, err := omsClient.CreateCampaignOrderLine(campaignLineItem)
+	if err != nil {
+		return errors.Wrapf(err, "Cannot create a campaign line item")
+	}
+
+	return nil
+}
+
+func generateInvoices(omsClient *client.Client, campaignsCreatedIDMap map[int]struct{}) (int, error) {
+	createdInvoices := 0
+
+	for campaignID := range campaignsCreatedIDMap {
+		_, err := omsClient.GenerateInvoiceFromCampaign(&client.GenerateInvoiceFromCampaignRequest{ID: campaignID})
+		if err != nil {
+			return createdInvoices, errors.Wrapf(err, "Cannot create a invoice for campaign line: %d", campaignID)
+		}
+		createdInvoices++
+	}
+
+	return createdInvoices, nil
 }
 
 func (i *importCommand) initializeJSONDecoder(reader io.Reader) (*json.Decoder, error) {

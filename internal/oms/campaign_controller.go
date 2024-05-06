@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/chrisrob11/oms/internal/oms/db"
 	"github.com/chrisrob11/oms/internal/oms/models"
@@ -193,6 +194,8 @@ func (s *campaignsController) generateInvoice(c *gin.Context) {
 	}
 
 	s.logger.Info("Creating the Invoice")
+
+	invoice.IssuedAt = sql.NullTime{Valid: true, Time: time.Now().UTC()}
 
 	createdID, err := s.dbQueries.CreateInvoice(c.Request.Context(), invoice)
 	if err != nil {

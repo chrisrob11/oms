@@ -3,11 +3,11 @@ package cmds
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"text/tabwriter"
 	"time"
 
 	"github.com/chrisrob11/oms/internal/client"
+	"github.com/chrisrob11/oms/internal/oms/models"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -33,6 +33,10 @@ var ListCampaign = &cli.Command{
 		&cli.StringFlag{
 			Name: "token",
 		},
+		&cli.BoolFlag{
+			Name:    "followNextPage",
+			Aliases: []string{"fnp"},
+		},
 	},
 }
 
@@ -49,6 +53,28 @@ func (i *listCampaignCommand) Run(c *cli.Context) error {
 
 	limit := c.Int("limit")
 	token := c.String("token")
+	pageThrough := c.Bool("followNextPage")
+
+	req := buildListCampaignRequest(limit, token)
+	resp, err := omsClient.ListCampaigns(req)
+
+	if err != nil {
+		return errors.Wrap(err, "failed to list campaigns")
+	}
+
+	printCampaigns(resp.Items, true)
+
+	if pageThrough {
+		err = paginateCampaigns(omsClient, resp.NextPageToken)
+		if err != nil {
+			return errors.Wrap(err, "failed to paginate campaigns")
+		}
+	}
+
+	return nil
+}
+
+func buildListCampaignRequest(limit int, token string) *client.ListCampaignRequest {
 	req := &client.ListCampaignRequest{
 		Size: limit,
 	}
@@ -57,27 +83,47 @@ func (i *listCampaignCommand) Run(c *cli.Context) error {
 		req.Token = &token
 	}
 
-	resp, err := omsClient.ListCampaigns(req)
-	if err != nil {
-		return errors.Wrap(err, "Cannot create campaign")
-	}
+	return req
+}
 
-	// Create a new tabwriter
+func printCampaigns(campaigns []*models.Campaign, writeHeader bool) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	defer func() {
+		err := w.Flush()
+		if err != nil {
+			fmt.Printf("Unexpected flush error: %v", err)
+		}
+	}()
 
-	// Print header row
-	fmt.Fprintf(w, "ID\tName\tArchiving\n")
-
-	// Print data rows
-	for _, c := range resp.Items {
-		fmt.Fprintf(w, "%d\t%s\t%s\n", c.ID, c.Name, strconv.FormatBool(c.Archiving))
+	if writeHeader {
+		fmt.Fprintf(w, "ID\tName\tArchiving\n")
 	}
 
-	return w.Flush()
+	for _, c := range campaigns {
+		fmt.Fprintf(w, "%d\t%s\t%t\n", c.ID, c.Name, c.Archiving)
+	}
+}
+
+func paginateCampaigns(omsClient *client.Client, nextPageToken string) error {
+	for nextPageToken != "" {
+		resp, err := omsClient.ListCampaigns(&client.ListCampaignRequest{Token: &nextPageToken})
+		if err != nil {
+			return err
+		}
+
+		printCampaigns(resp.Items, false)
+		nextPageToken = resp.NextPageToken
+	}
+
+	return nil
 }
 
 func toCompactTime(t *time.Time) string {
 	if t == nil {
+		return ""
+	}
+
+	if t.IsZero() {
 		return ""
 	}
 
