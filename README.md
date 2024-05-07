@@ -55,7 +55,11 @@ Bucket 2
 4) Export Invoices
    - run `./bin/omsclient li -allFields`
    Kind of did a cheap version, its tab delimited like the existing one, but have a switch to write all fields. Could be used to export data and import into a spreadsheet
-5) Unit tests - Not added, and I'm mentioning this as I'm a bit frustrated about not having them. Most of this was because I have so  much dang boilerplate and I was attempting to "get pieces e2e" at the beginning through client commands I ran out of time on this.
+5) Unit tests - Not added, and I'm mentioning this as I'm a bit frustrated about not having them. Most of this was because I have so  much dang boilerplate and I was attempting to "get pieces e2e" at the beginning through client commands I ran out of time on this. 
+
+At least I had linters to find errors. Much of the linter setup and make file was from a personal project, just call
+
+
 6) Archiving - was going to add this. Basically a background task that simply "moves all of a graph of a campaign" to a file and "pushes" it S3, but didn't get there.
 
 
@@ -79,6 +83,9 @@ Thoughts on the excercise
 2) Tools that I use on a normal basis aren't the best for that. I wouldn't use sqlc, I'd just do dynamic sql generation in a safe manner. There are a couple other tools I could have used, SqlBoiler, go-jet.
 3) Lots of the code is boiler plate. I wish I had more time to write unit tests and dry it up. 
 4) Logging (and tracing and metrics) took a back seat. I added basic logger, but should have made its usage more universal.
+5) Missed adding a migration piece to run prior to everything.
+6) When the data is uploaded there is a precision issue, the data is not an exact match. Its close. I think its just an issue with the precision conversion from float64->string for db insert, then to numeric. Its likely just a bug in my code in the strconv.FormatFloat that I have. I didn't have time to fix this. Only noting this problem up front.
 
 Regardless of the outcome I'm glad I've done this. A good crash course in trying to build something quicker. I would have liked to play with react but decided instead to just make a cli.
+
 
